@@ -1,0 +1,90 @@
+# RailGuard — Central Project Configuration
+# Do not modify raw data paths.
+
+project:
+  name: "RailGuard"
+  description: "Predictive Maintenance & Equipment Health Intelligence System"
+  version: "0.1.0"
+
+paths:
+  raw_csv: "data/raw/MetroPT3(AirCompressor).csv"
+  raw_pdf: "data/raw/Data Description_Metro.pdf"
+  processed_dir: "data/processed"
+  artifacts_dir: "data/artifacts"
+
+dataset:
+  total_rows: 1516948
+  date_start: "2020-02-01"
+  date_end: "2020-09-01"
+  nominal_sampling_hz: 1          # 1Hz nominal; ~10s effective after de-duplication
+  effective_sampling_s: 10        # dominant timestamp gap observed in data
+  index_step: 10                  # raw index increments by 10 per row
+
+sensors:
+  analogue:
+    - TP2           # Compressor pressure (bar)
+    - TP3           # Pneumatic panel pressure (bar)
+    - H1            # Cyclonic separator filter discharge pressure (bar)
+    - DV_pressure   # Tower air-dryer discharge pressure drop (bar)
+    - Reservoirs    # Downstream reservoir pressure (bar)
+    - Oil_temperature  # Compressor oil temperature (°C)
+    - Motor_current    # One phase of 3-phase motor (A)
+  digital:
+    - COMP            # Air intake valve — active = off or offloaded
+    - DV_eletric      # Outlet valve — active = under load
+    - Towers          # Tower selector (0=tower1, 1=tower2)
+    - MPG             # Load-start signal (triggers below 8.2 bar)
+    - LPS             # Low pressure switch (activates below 7 bar)
+    - Pressure_switch # Tower discharge detection
+    - Oil_level       # Oil level alarm (active = oil low)
+    - Caudal_impulses # Air flow pulse counter (APU → reservoirs)
+
+# Documented failure events from company maintenance reports
+failure_events:
+  - id: "F1"
+    start: "2020-04-18 00:00:00"
+    end:   "2020-04-18 23:59:00"
+    type:  "Air Leak"
+    severity: "High stress"
+    maintenance: "2020-04-30 12:00:00"
+  - id: "F2"
+    start: "2020-05-29 23:30:00"
+    end:   "2020-05-30 06:00:00"
+    type:  "Air Leak"
+    severity: "High stress"
+    maintenance: "2020-04-30 12:00:00"   # note: same maintenance event as F1
+  - id: "F3"
+    start: "2020-06-05 10:00:00"
+    end:   "2020-06-07 14:30:00"
+    type:  "Air Leak"
+    severity: "High stress"
+    maintenance: "2020-06-08 16:00:00"
+  - id: "F4"
+    start: "2020-07-15 14:30:00"
+    end:   "2020-07-15 19:00:00"
+    type:  "Air Leak"
+    severity: "High stress"
+    maintenance: "2020-07-16 00:00:00"
+
+# Predictive labeling parameters (to be tuned in Stage 3)
+labeling:
+  pre_failure_window_hours: 24    # label these hours before failure as "at-risk"
+  post_maintenance_cooldown_hours: 24  # exclude this window after maintenance
+  rul_max_hours: 168              # cap RUL at 7 days for regression targets
+
+# Anomaly detection
+anomaly:
+  rolling_window_minutes: 30     # window for rolling feature computation
+  resample_freq: "1min"          # resample to 1-minute for model input
+
+# Motor current operational states (from documentation)
+motor_current_states:
+  off: 0.0
+  offloaded: 4.0
+  under_load: 7.0
+  starting: 9.0
+
+# Pressure thresholds (from documentation)
+pressure_thresholds:
+  mpg_trigger_bar: 8.2    # MPG activates when APU pressure drops below this
+  lps_trigger_bar: 7.0    # LPS activates when pressure drops below this

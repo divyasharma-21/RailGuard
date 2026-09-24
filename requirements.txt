@@ -1,0 +1,36 @@
+# RailGuard dependencies
+# Python 3.10+ required
+
+# Core data processing
+numpy>=1.26
+pandas>=2.2
+scipy>=1.13
+
+# Fast Parquet I/O for processed data and artifacts
+pyarrow>=16.0
+
+# Configuration
+pyyaml>=6.0
+
+# PDF reading (Stage 1 data description)
+pypdf>=4.0
+
+# Machine learning (anomaly detection + supervised models)
+scikit-learn>=1.5
+
+# Explainability
+shap>=0.45
+
+# Visualisation — static figures
+matplotlib>=3.8
+seaborn>=0.13
+
+# Visualisation — interactive (dashboard)
+plotly>=5.22
+
+# Dashboard
+streamlit>=1.35
+
+# Development / testing
+pytest>=8.0
+jupyterlab>=4.0
